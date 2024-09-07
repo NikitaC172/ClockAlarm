@@ -1,25 +1,85 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class TimeRequester : MonoBehaviour
 {
     [SerializeField] private string[] _urlServers;
 
-    private void Awake()
+    private List<Task<DateTime>> _tasks;
+    private DateTime _globDateTime;
+    private float _intervalRequestMinutes = 60f;
+
+    public Action<int> CurrentTime;
+
+    private void Start()
     {
-        /*private async Task<WeatherInfo> GetWeather()
+        RequestTimePeriodic();
+    }
+
+    private async void RequestTimePeriodic()
+    {
+        while (true)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(String.Format("http://api.openweathermap.org/data/2.5/weather?id={0}&APPID={1}", CityId, API_KEY));
-            HttpWebResponse response = (HttpWebResponse)(await request.GetResponseAsync());
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            string jsonResponse = reader.ReadToEnd();
-            WeatherInfo info = JsonUtility.FromJson<WeatherInfo>(jsonResponse);
-            return info;
-        }*/
+            CreateTaskTimeRequest();
+            Task<DateTime> getTime = await Task.WhenAny(_tasks);
+            _globDateTime = await getTime;
+            SetCurrentTime();
+            await Task.Delay(TimeSpan.FromMinutes(_intervalRequestMinutes));
+        }
+    }
+
+    private void SetCurrentTime()
+    {
+        int timeSeconds = _globDateTime.Hour * 3600 + _globDateTime.Minute * 60 + _globDateTime.Second;
+        CurrentTime?.Invoke(timeSeconds);
+    }
+
+    private void CreateTaskTimeRequest()
+    {
+        _tasks = new List<Task<DateTime>>();
+
+        for (int i = 0; i < _urlServers.Length; i++)
+        {
+            _tasks.Add(CheckGlobalTime(_urlServers[i]));
+        }
+    }
+
+    private async Task<DateTime> CheckGlobalTime(string URL)
+    {
+        DateTime globDateTime;
+        bool isCorrect = true;
+        UnityWebRequest unityWebRequest = new UnityWebRequest(URL);
+        unityWebRequest.SendWebRequest();
+        string timeStr = null;
+
+        while (isCorrect == true)
+        {
+            while (!unityWebRequest.isDone && unityWebRequest.error == null)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+
+            try
+            {
+                timeStr = unityWebRequest.GetResponseHeader("Date");
+                isCorrect = false;
+            }
+            catch(Exception ex)
+            {
+                Debug.LogException(ex);
+                await Task.Delay(TimeSpan.FromSeconds(10));
+            }
+
+        }
+
+        if (!DateTime.TryParse(timeStr, out globDateTime))
+        {
+            return DateTime.MinValue;
+        }
+
+        return globDateTime;
     }
 }

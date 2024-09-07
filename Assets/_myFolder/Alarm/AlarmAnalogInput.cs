@@ -14,6 +14,9 @@ public class AlarmAnalogInput : MonoBehaviour
 
     private float _hour = 0;
     private float _minute = 0;
+    float _relPositionX;
+    float _relPositionY;
+    private int _hourInOneRound = 12;
     private bool _isPressedHour = false;
     private bool _isPressedMinute = false;
 
@@ -56,22 +59,44 @@ public class AlarmAnalogInput : MonoBehaviour
         TimeChanged?.Invoke();
     }
 
+    private float VectorLength(float x, float y)
+    {
+        return new Vector2(x, y).magnitude;
+    }
+
     private void CalculateAngle(Arrow arrow, bool isHourArrow)
     {
-        float relPositionX = Mouse.current.position.x.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).x;
-        float relPositionY = Mouse.current.position.y.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).y;
-        float angle = -Mathf.Atan2(relPositionX, relPositionY) * Mathf.Rad2Deg;
+#if UNITY_EDITOR
+        _relPositionX = Mouse.current.position.x.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).x;
+        _relPositionY = Mouse.current.position.y.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).y;
+#endif
+#if !UNITY_EDITOR
+        _relPositionX = Touchscreen.current.position.x.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).x;
+        _relPositionY = Touchscreen.current.position.y.ReadValue() - RectTransformUtility.WorldToScreenPoint(_camera, arrow.RectTransform.position).y;
+#endif
+        float angle = -Mathf.Atan2(_relPositionX, _relPositionY) * Mathf.Rad2Deg;
         arrow.SetAngle(angle);
 
         if (isHourArrow == true)
         {
-            if (angle <= 0)
+            int currentRound;
+
+            if (VectorLength(_relPositionX, _relPositionY) > 250f)
             {
-                _hour = -angle / 30;
+                currentRound = _hourInOneRound;
             }
             else
             {
-                _hour = (360 - angle) / 30;
+                currentRound = 0;
+            }
+
+            if (angle <= 0)
+            {
+                _hour = -angle / 30 + currentRound;
+            }
+            else
+            {
+                _hour = (360 - angle) / 30 + currentRound;
             }
         }
         else
@@ -111,10 +136,10 @@ public class AlarmAnalogInput : MonoBehaviour
 
     private void RenderArrow(int seconds)
     {
-        float hour = seconds / 3600f;
-        float minute = seconds % 3600f / 60f;
+        _hour = seconds / 3600f;
+        _minute = seconds % 3600f / 60f;
 
-        _hourArrow.SetAngleByTime(hour);
-        _minuteArrow.SetAngleByTime(minute);
+        _hourArrow.SetAngleByTime(_hour);
+        _minuteArrow.SetAngleByTime(_minute);
     }
 }

@@ -48,6 +48,5 @@ public class Alarm : MonoBehaviour
     private void ActivateAlarm()
     {
         TimeComes?.Invoke();
-        Debug.Log("Alarm");
     }
 }

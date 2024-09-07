@@ -19,11 +19,6 @@ public class ClockRenderAnalog : MonoBehaviour
 
     private void RenderClock(float hour, float minute, float second)
     {
-        //
-        /*Debug.Log(hour + "  " + minute + "  " + seconds);
-        TimeSpan TS = new TimeSpan(0, 0, secondstest);//
-        Debug.Log(TS);//*/
-        ////
         _hoursArrow.SetAngleByTime(hour);
         _minuteArrow.SetAngleByTime(minute);
         _secondArrow.SetAngleByTime(second);

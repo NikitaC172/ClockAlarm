@@ -4,17 +4,38 @@ using UnityEngine;
 
 public class Clock : MonoBehaviour
 {
-    [SerializeField] private int timeTest; ////////////////////////////////////////////////////////////////
-    private int _currentTime;
-    public Action<int> timeChangedSeconds;
-    public Action<float,float,float> timeChanged;
+    [SerializeField] private TimeRequester _requester;
+    private int _currentTime = 0;
+    private int errorTime = 3;
 
-    private const int MaxSeconds = 24*3600;
+    public Action<int> timeChangedSeconds;
+    public Action<float, float, float> timeChanged;
+
+    private const int MaxSeconds = 24 * 3600;
 
     private void Start()
     {
-        _currentTime = timeTest;
         CountTime();
+    }
+
+    private void OnEnable()
+    {
+        _requester.CurrentTime += CheckTime;
+    }
+
+    private void OnDisable()
+    {
+        _requester.CurrentTime -= CheckTime;
+    }
+
+    private void CheckTime(int seconds)
+    {
+        int deltaTime = Mathf.Abs(_currentTime - seconds);
+
+        if (deltaTime >= errorTime)
+        {
+            _currentTime = seconds;
+        }
     }
 
     private async void CountTime()

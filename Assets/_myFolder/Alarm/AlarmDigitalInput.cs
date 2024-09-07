@@ -10,7 +10,6 @@ public class AlarmDigitalInput : MonoBehaviour
 
     private int _hour = 0;
     private int _minute = 0;
-    private bool _isfocusFall = false;
     private const int LeftPadding = 2;
 
     public Action<int> AlarmTimeChanged;
@@ -51,22 +50,16 @@ public class AlarmDigitalInput : MonoBehaviour
 
     private void ValidateMinute(string number)
     {
-        if (_isfocusFall == false)
-        {
-            int.TryParse(number, out _minute);
-            _minute = Mathf.Clamp(_minute, 0, 59);
-            _inputFieldMinute.text = _minute.ToString();
-            TimeAlarmOnChange();
-        }
-
-            _isfocusFall = false;
+        int.TryParse(number, out _minute);
+        _minute = Mathf.Clamp(_minute, 0, 59);
+        _inputFieldMinute.text = _minute.ToString();
+        TimeAlarmOnChange();
     }
 
     private void ValidateMinuteDesecelect(string number)
     {
         if (_minute < 10)
         {
-            _isfocusFall = true;
             _inputFieldMinute.text = $"{_minute.ToString().PadLeft(LeftPadding, '0')}";
         }
     }
