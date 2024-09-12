@@ -17,10 +17,10 @@ public class ClockRenderAnalog : MonoBehaviour
         _clock.timeChanged -= RenderClock;
     }
 
-    private void RenderClock(float hour, float minute, float second)
+    private void RenderClock(TimeStruct time)
     {
-        _hoursArrow.SetAngleByTime(hour);
-        _minuteArrow.SetAngleByTime(minute);
-        _secondArrow.SetAngleByTime(second);
+        _hoursArrow.SetAngleByTime(time.hour);
+        _minuteArrow.SetAngleByTime(time.minute);
+        _secondArrow.SetAngleByTime(time.second);
     }
 }

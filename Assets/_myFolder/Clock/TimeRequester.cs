@@ -10,7 +10,9 @@ public class TimeRequester : MonoBehaviour
 
     private List<Task<DateTime>> _tasks;
     private DateTime _globDateTime;
-    private float _intervalRequestMinutes = 60f;
+    private float _intervalRequestSecondsHour = 3600f;
+    private float _intervalRequestSeconds = 15f;
+    private bool _isActivePeriodicRequest = true;
 
     public Action<int> CurrentTime;
 
@@ -21,13 +23,21 @@ public class TimeRequester : MonoBehaviour
 
     private async void RequestTimePeriodic()
     {
-        while (true)
+        while (_isActivePeriodicRequest)
         {
             CreateTaskTimeRequest();
             Task<DateTime> getTime = await Task.WhenAny(_tasks);
             _globDateTime = await getTime;
-            SetCurrentTime();
-            await Task.Delay(TimeSpan.FromMinutes(_intervalRequestMinutes));
+
+            if (_globDateTime == DateTime.MinValue)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(_intervalRequestSeconds));
+            }
+            else
+            {
+                SetCurrentTime();
+                await Task.Delay(TimeSpan.FromSeconds(_intervalRequestSecondsHour));
+            }
         }
     }
 
@@ -50,33 +60,20 @@ public class TimeRequester : MonoBehaviour
     private async Task<DateTime> CheckGlobalTime(string URL)
     {
         DateTime globDateTime;
-        bool isCorrect = true;
         UnityWebRequest unityWebRequest = new UnityWebRequest(URL);
         unityWebRequest.SendWebRequest();
         string timeStr = null;
 
-        while (isCorrect == true)
+        while (!unityWebRequest.isDone && unityWebRequest.error == null)
         {
-            while (!unityWebRequest.isDone && unityWebRequest.error == null)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-            }
-
-            try
-            {
-                timeStr = unityWebRequest.GetResponseHeader("Date");
-                isCorrect = false;
-            }
-            catch(Exception ex)
-            {
-                Debug.LogException(ex);
-                await Task.Delay(TimeSpan.FromSeconds(10));
-            }
-
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
+
+        timeStr = unityWebRequest.GetResponseHeader("Date");
 
         if (!DateTime.TryParse(timeStr, out globDateTime))
         {
+            await Task.Delay(TimeSpan.FromSeconds(15));
             return DateTime.MinValue;
         }
 

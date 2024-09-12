@@ -17,11 +17,11 @@ public class ClockRenderDigital : MonoBehaviour
         _clock.timeChanged -= RenderClock;
     }
 
-    public void RenderClock(float hour, float minute, float second)
+    public void RenderClock(TimeStruct time)
     {
-        int hourInt = (int)hour;
-        int minuteInt = (int)minute;
-        int secondInt = (int)second;
+        int hourInt = (int)time.hour;
+        int minuteInt = (int)time.minute;
+        int secondInt = (int)time.second;
 
         _textTime.text =
                         $"{hourInt}" +
