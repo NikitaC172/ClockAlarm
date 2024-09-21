@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class AlarmSetter : MonoBehaviour
 {
-    [SerializeField] private AlarmDigitalInput _digitalInput;
+    [SerializeField] private DigitalInput _digitalInput;
     [SerializeField] private AlarmSwitch _alarmSwitch;
 
     public Action<int> AlarmTimeSetted;

@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,13 +34,13 @@ public class AlarmPlayer : MonoBehaviour
         _alarmPanel.gameObject.SetActive(true);
         _audioSource.clip = _audioClip;
         _audioSource.Play();
-        DelayAfterOff();
+        _ = DelayAfterOff();
 
     }
 
-    private async void DelayAfterOff()
+    private async UniTask DelayAfterOff()
     {
-        await Task.Delay(TimeSpan.FromMinutes(1f));
+        await UniTask.Delay(TimeSpan.FromMinutes(1f));
         Deactivate();
     }
 }

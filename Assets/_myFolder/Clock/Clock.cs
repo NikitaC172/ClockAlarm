@@ -1,10 +1,11 @@
+using Cysharp.Threading.Tasks;
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class Clock : MonoBehaviour
 {
     [SerializeField] private TimeRequester _requester;
+    [SerializeField] private ManualSetterTime _manualSetterTime;
     private int _currentTime = 0;
     private int errorTime = 3;
     private bool _isClocking = true;
@@ -16,17 +17,27 @@ public class Clock : MonoBehaviour
 
     private void Start()
     {
-        CountTime();
+        _ = CountTime();
     }
 
     private void OnEnable()
     {
         _requester.CurrentTime += CheckTime;
+
+        if (_manualSetterTime != null)
+        {
+            _manualSetterTime.ManualTimeSetted += CheckTime;
+        }
     }
 
     private void OnDisable()
     {
         _requester.CurrentTime -= CheckTime;
+
+        if (_manualSetterTime != null)
+        {
+            _manualSetterTime.ManualTimeSetted -= CheckTime;
+        }
     }
 
     private void CheckTime(int seconds)
@@ -39,7 +50,7 @@ public class Clock : MonoBehaviour
         }
     }
 
-    private async void CountTime()
+    private async UniTask CountTime()
     {
         while (_isClocking)
         {
@@ -51,7 +62,7 @@ public class Clock : MonoBehaviour
             }
 
             OnChangedTime();
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
     }
 
